@@ -2,9 +2,12 @@ package edu.cnm.deepdive.nasaapod.model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import java.io.Serializable;
 import java.util.Date;
 
-public class Apod {
+public class Apod implements Serializable {
+
+  private static final long serialVersionUID = 2547946263420122184L;
 
   @Expose
   private Date date;
