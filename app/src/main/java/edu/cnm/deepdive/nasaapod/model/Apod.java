@@ -2,6 +2,7 @@ package edu.cnm.deepdive.nasaapod.model;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
@@ -51,9 +52,10 @@ public class Apod implements Serializable {
   @SerializedName("hdurl")
   private String hdUrl;
 
+  @Ignore
   @Expose
   @SerializedName("service_version")
-  private String serviceVersion;
+  private  String serviceVersion;
 
   public long getId() {
     return id;

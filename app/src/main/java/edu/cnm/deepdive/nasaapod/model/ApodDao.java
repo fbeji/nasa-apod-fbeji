@@ -3,16 +3,15 @@ package edu.cnm.deepdive.nasaapod.model;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
+import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 import java.util.Date;
 import java.util.List;
 
-
-
 @Dao
 public interface ApodDao {
 
-  @Insert
+  @Insert(onConflict = OnConflictStrategy.IGNORE)
   long insert(Apod apod);
 
   @Query("SELECT * FROM Apod WHERE date = :date")
@@ -22,4 +21,5 @@ public interface ApodDao {
   int delete(Apod apod);
 
 }
+
 

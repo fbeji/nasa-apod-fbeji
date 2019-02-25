@@ -1,6 +1,7 @@
 package edu.cnm.deepdive.nasaapod.controller;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
 import android.os.AsyncTask;
 import android.support.design.widget.FloatingActionButton;
@@ -18,17 +19,27 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import edu.cnm.deepdive.nasaapod.ApodApplication;
 import edu.cnm.deepdive.nasaapod.BuildConfig;
 import edu.cnm.deepdive.nasaapod.R;
 import edu.cnm.deepdive.nasaapod.controller.DateTimePickerFragment.Mode;
 import edu.cnm.deepdive.nasaapod.controller.DateTimePickerFragment.OnChangeListener;
 import edu.cnm.deepdive.nasaapod.model.Apod;
 import edu.cnm.deepdive.nasaapod.service.ApodService;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -157,6 +168,8 @@ public class MainActivity extends AppCompatActivity {
 
   private class ApodTask extends AsyncTask<Date, Void, Apod> {
 
+    private static final int BUFFER_SIZE = 4096;
+
     @Override
     protected void onPreExecute() {
       loading.setVisibility(View.VISIBLE);
@@ -194,6 +207,61 @@ public class MainActivity extends AppCompatActivity {
       return apod;
     }
 
-  }
+    private Apod loadFromDatabase(Date date) {
 
+      Date dateOnly = new Date(date.getYear(), date.getMonth(), date.getDate());
+
+      List<Apod> records =
+          ApodApplication.getInstance().getDatabase().getApodDao().find(dateOnly);
+      return (records.size() > 0) ? records.get(0) : null;
+
+    }
+
+    private String filenameFromUrl(String url) {
+
+      try {
+        URI uri = new URL(url).toURI();
+        String[] parts = uri.getPath().split("/");
+        return parts[parts.length - 1];
+      } catch (URISyntaxException | MalformedURLException e) {
+        Log.e(getClass().getSimpleName(), e.toString());
+        return null;
+      }
+
+    }
+
+    private void saveImage(Apod apod) throws IOException {
+
+      URL url = new URL(apod.getUrl());
+      String filename = filenameFromUrl(apod.getUrl());
+
+      URLConnection connection = url.openConnection();
+
+      try (OutputStream output = openFileOutput(filename, Context.MODE_PRIVATE);
+          InputStream input = connection.getInputStream();
+
+      ) {
+
+        byte[] buffer = new byte[BUFFER_SIZE];
+        int bytesRead = 0;
+
+        while ((bytesRead = input.read(buffer)) > -1) {
+
+          output.write(buffer, 0, bytesRead);
+
+        }
+      }
+
+    }
+
+    private String urlFromFilename(String filename) {
+
+      return "file://" + new File(getFilesDir(), filename).toString();
+    }
+
+    private boolean fileExists(String filename) {
+
+      return new File(getFilesDir(), filename).exists();
+    }
+  }
 }

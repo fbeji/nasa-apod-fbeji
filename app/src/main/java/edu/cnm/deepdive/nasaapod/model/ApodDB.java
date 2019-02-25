@@ -19,49 +19,49 @@ import java.util.Date;
 
 @TypeConverters(Converters.class)
 
-
 public abstract class ApodDB extends RoomDatabase {
 
   // object that gives the database itself
 
-private static final String DB_NAME = "apod_db";
+  private static final String DB_NAME = "apod_db";
 
-private static ApodDB instance = null;
+  private static ApodDB instance = null;
 
-public synchronized static ApodDB getInstance(Context context){
+  public synchronized static ApodDB getInstance(Context context) {
 
-  if(instance == null){
+    if (instance == null) {
 
-    instance = Room.databaseBuilder(context.getApplicationContext(), ApodDB.class, DB_NAME)
-        .build();
-  }
+      instance = Room.databaseBuilder(context.getApplicationContext(), ApodDB.class, DB_NAME)
+          .build();
+    }
 
-  return instance;
-
-}
-
-public synchronized static void forgetInstance(){
-
-  instance = null;
-}
-
-public static class Converters{
-
-  @TypeConverter
-  public static Date dateFromLong(Long time){
-    return (time != null) ? new Date(time): null;
+    return instance;
 
   }
-  @TypeConverter
-  public static long longFromDate(Date date){
 
+  public synchronized static void forgetInstance() {
 
-    return (date != null)? date.getTime() : null;
+    instance = null;
   }
 
+  public abstract ApodDao getApodDao();
 
-}
+  public static class Converters {
 
+    @TypeConverter
+    public static Date dateFromLong(Long time) {
+      return (time != null) ? new Date(time) : null;
+
+    }
+
+    @TypeConverter
+    public static long longFromDate(Date date) {
+
+      return (date != null) ? date.getTime() : null;
+    }
+
+
+  }
 
 
 }
