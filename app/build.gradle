@@ -18,7 +18,7 @@ android {
         buildConfigField "String", "API_KEY", getServiceProperty("api_key")
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = ["room.schemaLocation" : "$projectDir/schemas".toString()]
+                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
             }
         }
     }
