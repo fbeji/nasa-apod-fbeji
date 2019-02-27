@@ -5,10 +5,14 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebResourceRequest;
@@ -57,6 +61,8 @@ public class ImageFragment extends Fragment {
   private Apod apod;
   private Calendar calendar;
 
+
+
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
@@ -79,8 +85,32 @@ public class ImageFragment extends Fragment {
     return view;
   }
 
+
+  @Override
+  public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    super.onCreateOptionsMenu(menu, inflater);
+    inflater.inflate(R.menu.options, menu);
+
+  }
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    if (item.getItemId() == R.id.info) {
+      showInfo();
+      return true;
+    } else {
+      return super.onOptionsItemSelected(item);
+    }
+  }
+
+  @Override
+  public void onSaveInstanceState(@NonNull Bundle outState) {
+    super.onSaveInstanceState(outState);
+    outState.putLong(CALENDAR_KEY, calendar.getTimeInMillis());
+    outState.putSerializable(APOD_KEY, apod);
+  }
+
   @SuppressLint("SetJavaScriptEnabled")
-  private void setupWebView(View vi) {
+  private void setupWebView(View view) {
     webView = findViewById(R.id.web_view);
     loading = findViewById(R.id.loading);
     webView.setWebViewClient(new WebViewClient() {
