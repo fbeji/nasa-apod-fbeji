@@ -16,6 +16,9 @@ public interface ApodDao {
 
   @Query("SELECT * FROM Apod WHERE date = :date")
   List<Apod> find(Date date);
+  @Query("SELECT * FROM Apod ORDER BY date DESC")
+  List<Apod> list();
+
 
   @Delete
   int delete(Apod apod);

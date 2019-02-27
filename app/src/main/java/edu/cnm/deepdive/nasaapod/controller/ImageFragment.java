@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -61,6 +62,12 @@ public class ImageFragment extends Fragment {
   private Apod apod;
   private Calendar calendar;
 
+  @Override
+  public void onCreate(@Nullable Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setHasOptionsMenu(true);
+    setRetainInstance(true);
+  }
 
 
   @Override
@@ -69,7 +76,7 @@ public class ImageFragment extends Fragment {
     View view = inflater.inflate(R.layout.fragment_image, container, false);
     setupWebView(view);
     setupDatePicker(view);
-    setupService(view);
+    setupService();
     calendar = Calendar.getInstance();
     if (savedInstanceState != null) {
       long savedMillis = savedInstanceState.getLong(CALENDAR_KEY, calendar.getTimeInMillis());
@@ -111,8 +118,8 @@ public class ImageFragment extends Fragment {
 
   @SuppressLint("SetJavaScriptEnabled")
   private void setupWebView(View view) {
-    webView = findViewById(R.id.web_view);
-    loading = findViewById(R.id.loading);
+    webView = view.findViewById(R.id.web_view);
+    loading = view.findViewById(R.id.loading);
     webView.setWebViewClient(new WebViewClient() {
       @Override
       public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -136,7 +143,7 @@ public class ImageFragment extends Fragment {
 
   private void showInfo() {
     if (apod != null) {
-      Toast.makeText(getContext().this, apod.getTitle(), Toast.LENGTH_LONG).show();
+      Toast.makeText(getContext(), apod.getTitle(), Toast.LENGTH_LONG).show();
     }
   }
 
