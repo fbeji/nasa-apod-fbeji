@@ -11,45 +11,35 @@ import android.view.View;
 import android.view.ViewGroup;
 import edu.cnm.deepdive.nasaapod.ApodApplication;
 import edu.cnm.deepdive.nasaapod.R;
-import edu.cnm.deepdive.nasaapod.model.Apod;
+import edu.cnm.deepdive.nasaapod.model.entity.Apod;
 import edu.cnm.deepdive.nasaapod.view.HistoryAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class HistoryFragment extends Fragment {
-
 
   private RecyclerView historyView;
   private List<Apod> history;
-
   private HistoryAdapter adapter;
+  private ImageFragment imageFragment;
 
   @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setRetainInstance(true);
-
   }
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
-    // Inflate the layout for this fragment
     View view = inflater.inflate(R.layout.fragment_history, container, false);
-
     historyView = view.findViewById(R.id.history_view);
     history = new ArrayList<>();
-    adapter = new HistoryAdapter(getContext(), history);
+    adapter = new HistoryAdapter(this, history);
     historyView.setAdapter(adapter);
-
     new ApodQuery().execute();
-
-
     return view;
   }
-
-
 
   @Override
   public void onHiddenChanged(boolean hidden) {
@@ -59,8 +49,15 @@ public class HistoryFragment extends Fragment {
     }
   }
 
-  private class ApodQuery extends AsyncTask<Void, Void, List<Apod>> {
+  public void setImageFragment(ImageFragment fragment) {
+    imageFragment = fragment;
+  }
 
+  public ImageFragment getImageFragment() {
+    return imageFragment;
+  }
+
+  private class ApodQuery extends AsyncTask<Void, Void, List<Apod>> {
 
     @Override
     protected List<Apod> doInBackground(Void... voids) {
@@ -74,11 +71,9 @@ public class HistoryFragment extends Fragment {
 
     @Override
     protected void onPostExecute(List<Apod> apods) {
-
-    history.clear();
-    history.addAll(apods);
-    adapter.notifyDataSetChanged();
-
+      history.clear();
+      history.addAll(apods);
+      adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -87,5 +82,5 @@ public class HistoryFragment extends Fragment {
     }
   }
 
-  ;
 }
+

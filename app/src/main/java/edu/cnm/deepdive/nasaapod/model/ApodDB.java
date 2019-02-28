@@ -8,6 +8,8 @@ import android.arch.persistence.room.TypeConverter;
 import android.arch.persistence.room.TypeConverters;
 import android.content.Context;
 import edu.cnm.deepdive.nasaapod.model.ApodDB.Converters;
+import edu.cnm.deepdive.nasaapod.model.dao.ApodDao;
+import edu.cnm.deepdive.nasaapod.model.entity.Apod;
 import java.util.Date;
 
 @Database(

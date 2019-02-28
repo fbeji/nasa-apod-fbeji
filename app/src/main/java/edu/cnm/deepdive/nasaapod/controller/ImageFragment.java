@@ -28,8 +28,7 @@ import edu.cnm.deepdive.nasaapod.ApodApplication;
 import edu.cnm.deepdive.nasaapod.BuildConfig;
 import edu.cnm.deepdive.nasaapod.R;
 import edu.cnm.deepdive.nasaapod.controller.DateTimePickerFragment.Mode;
-import edu.cnm.deepdive.nasaapod.controller.DateTimePickerFragment.OnChangeListener;
-import edu.cnm.deepdive.nasaapod.model.Apod;
+import edu.cnm.deepdive.nasaapod.model.entity.Apod;
 import edu.cnm.deepdive.nasaapod.service.ApodService;
 import java.io.File;
 import java.io.IOException;
@@ -54,6 +53,7 @@ public class ImageFragment extends Fragment {
   private static final String DATE_FORMAT = "yyyy-MM-dd";
   private static final String CALENDAR_KEY = "calendar_ms";
   private static final String APOD_KEY = "apod";
+  private static final String IMAGE_MEDIA_TYPE = "image";
 
   private WebView webView;
   private String apiKey;
@@ -62,13 +62,14 @@ public class ImageFragment extends Fragment {
   private Apod apod;
   private Calendar calendar;
 
+  // TODO Define method to allow programmatic change of image.
+
   @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setHasOptionsMenu(true);
     setRetainInstance(true);
   }
-
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -79,26 +80,22 @@ public class ImageFragment extends Fragment {
     setupService();
     calendar = Calendar.getInstance();
     if (savedInstanceState != null) {
-      long savedMillis = savedInstanceState.getLong(CALENDAR_KEY, calendar.getTimeInMillis());
-      calendar.setTimeInMillis(savedMillis);
       apod = (Apod) savedInstanceState.getSerializable(APOD_KEY);
     }
     if (apod != null) {
-      loading.setVisibility(View.VISIBLE);//TODO only is visible
-      webView.loadUrl(apod.getUrl());
+      setApod(apod);
     } else {
       new ApodTask().execute(calendar.getTime());
     }
     return view;
   }
 
-
   @Override
   public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
     super.onCreateOptionsMenu(menu, inflater);
     inflater.inflate(R.menu.options, menu);
-
   }
+
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     if (item.getItemId() == R.id.info) {
@@ -114,6 +111,19 @@ public class ImageFragment extends Fragment {
     super.onSaveInstanceState(outState);
     outState.putLong(CALENDAR_KEY, calendar.getTimeInMillis());
     outState.putSerializable(APOD_KEY, apod);
+  }
+
+  public void setApod(Apod apod) {
+    this.apod = apod;
+    calendar.setTime(apod.getDate());
+    if (isVisible()) {
+      loading.setVisibility(View.VISIBLE);
+    }
+    String url = apod.getUrl();
+    if (apod.getMediaType().equals(IMAGE_MEDIA_TYPE)) {
+      url = urlFromFilename(filenameFromUrl(url));
+    }
+    webView.loadUrl(url);
   }
 
   @SuppressLint("SetJavaScriptEnabled")
@@ -173,10 +183,24 @@ public class ImageFragment extends Fragment {
     apiKey = BuildConfig.API_KEY;
   }
 
+  private String filenameFromUrl(String url) {
+    try {
+      URI uri  = new URL(url).toURI();
+      String[] parts = uri.getPath().split("/");
+      return parts[parts.length - 1];
+    } catch (URISyntaxException | MalformedURLException e) {
+      Log.e(getClass().getSimpleName(), e.toString());
+      return null;
+    }
+  }
+
+  private String urlFromFilename(String filename) {
+    return "file://" + new File(getContext().getFilesDir(), filename).toString();
+  }
   private class ApodTask extends AsyncTask<Date, Void, Apod> {
 
     private static final int BUFFER_SIZE = 4096;
-    private static final String IMAGE_MEDIA_TYPE = "image";
+
 
     @Override
     protected void onPreExecute() {
@@ -185,6 +209,7 @@ public class ImageFragment extends Fragment {
 
     @Override
     protected void onPostExecute(Apod apod) {
+      setApod(apod);
       ImageFragment.this.apod = apod;
       String url = apod.getUrl();
       if (apod.getMediaType().equals(IMAGE_MEDIA_TYPE)) {
@@ -211,8 +236,7 @@ public class ImageFragment extends Fragment {
             ApodApplication.getInstance().getDatabase().getApodDao().insert(apod);
             calendar.setTime(dates[0]);
           }
-        } else {
-          calendar.setTime(dates[0]);
+
         }
         if (apod != null
             && apod.getMediaType().equals(IMAGE_MEDIA_TYPE)
@@ -236,16 +260,7 @@ public class ImageFragment extends Fragment {
       return (records.size() > 0) ? records.get(0) : null;
     }
 
-    private String filenameFromUrl(String url) {
-      try {
-        URI uri  = new URL(url).toURI();
-        String[] parts = uri.getPath().split("/");
-        return parts[parts.length - 1];
-      } catch (URISyntaxException | MalformedURLException e) {
-        Log.e(getClass().getSimpleName(), e.toString());
-        return null;
-      }
-    }
+
 
     private void saveImage(Apod apod) throws IOException {
       URL url = new URL(apod.getUrl());
@@ -263,9 +278,7 @@ public class ImageFragment extends Fragment {
       }
     }
 
-    private String urlFromFilename(String filename) {
-      return "file://" + new File(getContext().getFilesDir(), filename).toString();
-    }
+
 
     private boolean fileExists(String filename) {
       return new File(getContext().getFilesDir(), filename).exists();

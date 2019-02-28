@@ -1,4 +1,4 @@
-package edu.cnm.deepdive.nasaapod.model;
+package edu.cnm.deepdive.nasaapod.model.entity;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
